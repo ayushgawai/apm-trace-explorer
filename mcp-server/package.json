@@ -1,0 +1,8 @@
+{
+  "name": "apm-trace-explorer-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node src/index.js", "test": "node --test test/mcp.test.js" },
+  "engines": { "node": ">=18" }
+}

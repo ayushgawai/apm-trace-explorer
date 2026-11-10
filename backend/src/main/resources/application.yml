@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: apm-trace-explorer
+  profiles:
+    default: memory
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+apm:
+  bucket-millis: 60000
+  retention-buckets: 180
+  trace-ttl-seconds: 7200
+  anomaly:
+    interval-ms: 15000
+    current-buckets: 2
+    baseline-buckets: 15
+    min-samples: 30
+    latency-ratio: 1.5
+    min-delta-ms: 20
+    error-delta: 0.05
+---
+# Local runs and tests: everything in memory, no external services needed.
+spring:
+  config:
+    activate:
+      on-profile: memory
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+apm:
+  stores: memory
+---
+# docker-compose / Kubernetes: PostgreSQL for metadata, Redis for spans.
+spring:
+  config:
+    activate:
+      on-profile: external
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/apm}
+    username: ${DB_USER:apm}
+    password: ${DB_PASSWORD:apm}
+  sql:
+    init:
+      mode: always
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+apm:
+  stores: external

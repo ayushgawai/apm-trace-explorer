@@ -1,0 +1,16 @@
+#!/bin/sh
+# Minimal Maven wrapper: downloads the pinned Maven into ~/.m2/wrapper on first use, then runs it.
+set -e
+version=3.9.9
+url="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$version/apache-maven-$version-bin.zip"
+dir=$(cd "$(dirname "$0")" && pwd)
+home="${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists/apache-maven-$version"
+if [ ! -x "$home/bin/mvn" ]; then
+  echo "Downloading $url" >&2
+  rm -rf "$home.tmp" && mkdir -p "$home.tmp"
+  curl -fsSL "$url" -o "$home.tmp/maven.zip"
+  unzip -q "$home.tmp/maven.zip" -d "$home.tmp"
+  mv "$home.tmp/apache-maven-$version" "$home"
+  rm -rf "$home.tmp"
+fi
+exec "$home/bin/mvn" -f "$dir/pom.xml" "$@"
